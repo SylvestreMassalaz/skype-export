@@ -4,18 +4,18 @@
       <p class="text">Select the type of export you want</p>
       <div class="radios">
         <label class="radio">
-          <input type="radio" name="export-type" [(ngModel)]="export_type" value="csv">
+          <input type="radio" name="export-type" [(ngModel)]="exportType" value="csv">
           CSV
         </label>
         <label class="radio">
-          <input type="radio" name="export-type" [(ngModel)]="export_type" value="word">
+          <input type="radio" name="export-type" [(ngModel)]="exportType" value="word">
           Word (.docx)
         </label>
       </div>
     </div>
     <div class="column">
       <p>Select the conversation you want to export</p>
-      <select [(ngModel)]="export_conv_id" class="select">
+      <select [(ngModel)]="exportConvId" class="select">
         @for(conv of conversations(); track conv.id) {
           <option [value]="conv.id">{{conv.label}}</option>
         }
@@ -23,7 +23,7 @@
     </div>
   </div>
 
-  <button class="button is-primary" (click)="requestExport()" [disabled]="export_conv_id == ''">Start export</button>
+  <button class="button is-primary" (click)="requestExport()" [disabled]="exportConvId == ''">Start export</button>
 
   <hr/>
   <p class="my-5">

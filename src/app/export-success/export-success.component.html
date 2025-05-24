@@ -1,5 +1,11 @@
-<h3 class="title">Your export file is ready !</h3>
-<p class="text">
-  You can download it usisng the button below
-</p>
-<button class="button is-primary" [disabled]="exportFile() === null" (click)="triggerFileDownload()">Download export</button>
+<div class="columns">
+  <div class="column">
+    <h3 class="title">Your export file is ready !</h3>
+    <p class="my-3">
+      You can download it usisng the button below
+    </p>
+    <button class="button is-primary" [disabled]="exportFile() === null" (click)="triggerFileDownload()">Download
+      export</button>
+    <button class="button is-secondary" (click)="askForAnotherExport()">Export another conversation</button>
+  </div>
+</div>

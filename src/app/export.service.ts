@@ -1,8 +1,9 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { ExportConfig } from './export-config/export-config.component';
-import { ConversationInfo, CSVExportMessage, SkypeConversation, SkypeExportData, SkypeMessage } from '../model';
+import { ConversationInfo, CSVExportMessage, ExportResult, SkypeConversation, SkypeExportData, SkypeMessage } from '../model';
 import { stringify } from 'csv-stringify/browser/esm/sync';
 import { decode } from 'html-entities';
+import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx"
 
 export enum ExportState {
   MESSAGES_FILE_UPLOAD,
@@ -27,7 +28,7 @@ export class ExportService {
   public status = signal<ExportState>(ExportState.MESSAGES_FILE_UPLOAD);
   public error = signal<ErrorType>(ErrorType.NONE);
   public skypeExportData = signal<SkypeExportData | null>(null)
-  public exportDataFile = signal<Blob | null>(null)
+  public exportDataFile = signal<ExportResult | null>(null)
 
   public conversationInfo = computed(() => {
     let data = this.skypeExportData()
@@ -64,12 +65,39 @@ export class ExportService {
       return
     }
 
-    let messageData = exportConvMessages(skypeExportData, config.conv_id)
-    let csvData = prepareForCsvExport(messageData)
-    let csvExport = stringify(csvData, {header: true})
-    let csvExportBlob = new Blob([csvExport], {type: "text/csv"})
-    this.exportDataFile.set(csvExportBlob)
+    let conv = getConvById(skypeExportData, config.conv_id)
+    let messageData = exportConvMessages(conv)
+    const fileName = generateFileName(config, conv)
+
+    if (config.export_type === "csv") {
+      console.info("Starting export to CSV")
+      this.exportToCSV(messageData, fileName)
+    } else {
+      console.info("Starting export to DocX")
+      this.exportToDocx(messageData, conv, fileName)
+    }
+  }
+
+  exportAnother() {
+    this.status.set(ExportState.CONVERSATION_CHOICE)
+  }
+
+  exportToCSV(messages: SkypeMessage[], fileName: string) {
+    let csvData = prepareForCsvExport(messages)
+    let csvExport = stringify(csvData, { header: true })
+    let csvExportBlob = new Blob([csvExport], { type: "text/csv" , })
+    this.exportDataFile.set({fileName, fileContent: csvExportBlob})
     this.status.set(ExportState.EXPORT_SUCCESS)
+  }
+
+  exportToDocx(messages: SkypeMessage[], conversation: SkypeConversation, fileName: string) {
+    let convertedMessages: Paragraph[] = []
+    const document = convertToDocx(messages, conversation)
+    const self = this
+    Packer.toBlob(document).then((blob) => {
+      self.exportDataFile.set({fileName, fileContent: blob})
+      self.status.set(ExportState.EXPORT_SUCCESS)
+    })
   }
 
   goToErrorState(reason: ErrorType) {
@@ -78,6 +106,51 @@ export class ExportService {
   }
 }
 
+function generateFileName(config: ExportConfig, conversation: SkypeConversation): string {
+  const fileExtension = config.export_type === "csv" ? ".csv" : ".docx"
+  const fileName = `${conversation.displayName}_exported`
+  return fileName + fileExtension;
+}
+
+function convertToDocx(messages: SkypeMessage[], conversation: SkypeConversation): Document {
+  return new Document({
+      sections: [{
+        children: [
+          new Paragraph({
+            text: conversation.displayName ?? "undefined",
+            heading: HeadingLevel.TITLE
+          }),
+          new Paragraph({
+            text: "Extracted from skype data"
+          }),
+          ...messagesToParagraphs(messages)
+        ]
+      }]
+    })
+}
+
+function messagesToParagraphs(messages: SkypeMessage[]): Paragraph[] {
+  return messages.map(message => {
+    return new Paragraph({
+        children: [
+          new TextRun({
+            text: extractSkypeUsername(message.from),
+            bold: true,
+            break: 1
+          }),
+          new TextRun({
+            text: message.originalarrivaltime,
+            italics: true,
+            break: 1
+          }),
+          new TextRun({
+            text: decode(message.content),
+            break: 2
+          })
+        ]
+      })
+  })
+}
 
 
 function extractConversations(data: SkypeExportData): ConversationInfo[] {
@@ -113,8 +186,7 @@ function filterUnusableMessages(conversation: SkypeConversation): SkypeMessage[]
     .filter(message => message.messagetype === "RichText" || message.messagetype === "Text")
 }
 
-function exportConvMessages(data: SkypeExportData, convId: string): SkypeMessage[] {
-  const conversation = getConvById(data, convId)
+function exportConvMessages(conversation: SkypeConversation): SkypeMessage[] {
   return filterUnusableMessages(conversation)
 }
 
@@ -131,7 +203,6 @@ function prepareForCsvExport(messages: SkypeMessage[]): CSVExportMessage[] {
     }
   })
 }
-
 
 function extractSkypeUsername(source: string): string {
   return source.split(":")[1]

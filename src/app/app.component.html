@@ -20,7 +20,10 @@
     <app-loading></app-loading>
     }
     @case (ExportState.EXPORT_SUCCESS) {
-    <app-export-success [exportFile]="exportService.exportDataFile()"></app-export-success>
+    <app-export-success
+      [exportFile]="exportService.exportDataFile()"
+      (exportAnother)="exportService.exportAnother()">
+    </app-export-success>
     }
     @case (ExportState.ERROR) {
     <app-error></app-error>

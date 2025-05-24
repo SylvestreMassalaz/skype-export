@@ -44,3 +44,8 @@ export interface CSVExportMessage {
   timestamp: string,
   message: string
 }
+
+export interface ExportResult {
+  fileContent: Blob,
+  fileName: string
+}

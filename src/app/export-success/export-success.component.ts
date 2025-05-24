@@ -1,5 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import FileSaver from 'file-saver';
+import { ExportResult } from '../../model';
 
 @Component({
   selector: 'app-export-success',
@@ -8,7 +9,9 @@ import FileSaver from 'file-saver';
   styleUrl: './export-success.component.scss'
 })
 export class ExportSuccessComponent {
-  exportFile = input.required<Blob | null>()
+  exportFile = input.required<ExportResult | null>()
+
+  exportAnother = output<void>()
 
   triggerFileDownload() {
     console.info("Triggering export of file")
@@ -19,6 +22,10 @@ export class ExportSuccessComponent {
     }
 
     console.info("Saving file as", file)
-    FileSaver.saveAs(file)
+    FileSaver.saveAs(file.fileContent, file.fileName)
+  }
+
+  askForAnotherExport() {
+    this.exportAnother.emit()
   }
 }

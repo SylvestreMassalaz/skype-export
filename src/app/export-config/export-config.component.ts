@@ -11,14 +11,14 @@ import { ConversationInfo } from '../../model';
 export class ExportConfigComponent {
   conversations = input.required<ConversationInfo[]>()
 
-  export_type = "csv"
+  exportType = "csv"
 
-  export_conv_id = ""
+  exportConvId = ""
 
   export_requested = output<ExportConfig>()
 
   requestExport() {
-    this.export_requested.emit({conv_id: this.export_conv_id, export_type: this.export_type})
+    this.export_requested.emit({conv_id: this.exportConvId, export_type: this.exportType})
   }
 }
 
