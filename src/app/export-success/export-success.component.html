@@ -1,0 +1,5 @@
+<h3 class="title">Your export file is ready !</h3>
+<p class="text">
+  You can download it usisng the button below
+</p>
+<button class="button is-primary" [disabled]="exportFile() === null" (click)="triggerFileDownload()">Download export</button>

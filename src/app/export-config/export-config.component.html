@@ -1,0 +1,57 @@
+<div class="container">
+  <div class="columns">
+    <div class="column">
+      <p class="text">Select the type of export you want</p>
+      <div class="radios">
+        <label class="radio">
+          <input type="radio" name="export-type" [(ngModel)]="export_type" value="csv">
+          CSV
+        </label>
+        <label class="radio">
+          <input type="radio" name="export-type" [(ngModel)]="export_type" value="word">
+          Word (.docx)
+        </label>
+      </div>
+    </div>
+    <div class="column">
+      <p>Select the conversation you want to export</p>
+      <select [(ngModel)]="export_conv_id" class="select">
+        @for(conv of conversations(); track conv.id) {
+          <option [value]="conv.id">{{conv.label}}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <button class="button is-primary" (click)="requestExport()" [disabled]="export_conv_id == ''">Start export</button>
+
+  <hr/>
+  <p class="my-5">
+    Before choosing which conversation to export, you can check the following table for more context on which is what.
+  </p>
+  <table class="table is-bordered is-striped">
+    <thead>
+      <tr>
+        <th>Conversation name</th>
+        <th>Nb. Messages</th>
+        <th>Recipients</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for(conv of conversations(); track conv.id) {
+        <tr>
+          <td>{{conv.label}}</td>
+          <td>{{conv.nbMessages}}</td>
+          <td>
+            @for(member of conv.members; track $index) {
+              {{member}}
+              @if (!$last) {
+                ,&nbsp;
+              }
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

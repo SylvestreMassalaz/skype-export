@@ -1,0 +1,7 @@
+<div class="columns">
+  @for(step of stepData(); track step.step) {
+    <div class="column">
+      <app-step [step]="step.step" [label]="step.label" [current]="step.current"></app-step>
+    </div>
+  }
+</div>
