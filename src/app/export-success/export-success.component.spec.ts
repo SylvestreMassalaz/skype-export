@@ -14,6 +14,7 @@ describe('ExportSuccessComponent', () => {
 
     fixture = TestBed.createComponent(ExportSuccessComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput("exportFile", null)
     fixture.detectChanges();
   });
 

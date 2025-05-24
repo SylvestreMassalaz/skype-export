@@ -14,6 +14,7 @@ describe('ExportConfigComponent', () => {
 
     fixture = TestBed.createComponent(ExportConfigComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput("conversations", [])
     fixture.detectChanges();
   });
 
